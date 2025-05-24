@@ -1,8 +1,10 @@
-pipeline(stages {
-  stage('Test') {
-      steps {
-            echo 'Running tests...'
-            // Add your test commands here
-      }
-  }
-})
+pipeline {
+    agent any
+    stages {
+        stage('Initialize') {
+            steps {
+                echo 'Initializing the pipeline...'
+            }
+        }
+    }}
+}

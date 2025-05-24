@@ -21,13 +21,6 @@ contributor(scriptScopeStepsContext) {
     method(name: 'parallel', type: 'Object', params: ['namedClosures':'java.util.Map'], doc: 'Execute named closures in parallel. e.g. parallel(task1: { /*...*/ }, task2: { /*...*/ })')
 
 
-    method(name: 'stages', type: 'void', params: [body: Closure], doc: '''
-           Contains one or more 'stage' directives. This is the core of the pipeline's work.
-           Allowed inside 'stages {}':
-           - stage('Stage Name') { ... }
-           - parallel { stage('Branch A') { ... }; stage('Branch B') { ... } } (This defines parallel declarative stages)
-           ''')
-
     method(name: 'build', type: 'Object', params: [job:'java.lang.String'], doc: 'Build a job.')
     method(name: 'build', type: 'Object', namedParams: [parameter(name: 'job', type: 'java.lang.String'), parameter(name: 'parameters', type: 'java.util.List', optional: true), parameter(name: 'propagate', type: 'boolean', optional: true), parameter(name: 'quietPeriod', type: 'java.lang.Integer', optional: true), parameter(name: 'wait', type: 'boolean', optional: true), parameter(name: 'waitForStart', type: 'boolean', optional: true), ], doc: 'Build a job with options.')
 
@@ -221,6 +214,8 @@ contributor(pipelineTopLevelContext) {
 // --- Inside the 'pipeline' block ---
 def pipelineInternalContext = context(scope: closureScope(), enclosingCallName: 'pipeline')
 contributor(pipelineInternalContext) {
+    delegatesTo(closureDelegate())
+
     method(name: 'agent', type: 'void', params: [agentTypeOrBody: 'Object'], doc: '''
            Specifies where the entire Pipeline, or a specific stage, will execute.
            Can be a simple type (any, none, 'label') or a configuration block like agent { label '...' } or agent { docker '...' }.
