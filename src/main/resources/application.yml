@@ -1,3 +1,5 @@
 spring:
   application:
     name: BenBuddy
+server:
+  port: 8888
