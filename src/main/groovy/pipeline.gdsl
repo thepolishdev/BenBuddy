@@ -121,7 +121,7 @@ contributor(scriptScopeStepsContext) {
 }
 
 // --- Node Context Steps (Available within a 'node { ... }' step block) ---
-def nodeContextStepsContext = context(scope: closureScope(), enclosingCallName: 'node')
+def nodeContextStepsContext = context(scope: scriptScope())
 contributor(nodeContextStepsContext) {
     method(name: 'bat', type: 'Object', params: [script:'java.lang.String'], doc: 'Windows Batch Script.')
     method(name: 'bat', type: 'Object', namedParams: [parameter(name: 'script', type: 'java.lang.String'), parameter(name: 'encoding', type: 'java.lang.String', optional: true), parameter(name: 'label', type: 'java.lang.String', optional: true), parameter(name: 'returnStatus', type: 'boolean', optional: true), parameter(name: 'returnStdout', type: 'boolean', optional: true), ], doc: 'Windows Batch Script with options.')
@@ -212,7 +212,7 @@ contributor(pipelineTopLevelContext) {
 }
 
 // --- Inside the 'pipeline' block ---
-def pipelineInternalContext = context(scope: closureScope(), enclosingCallName: 'pipeline')
+def pipelineInternalContext = context(scope: scriptScope())
 contributor(pipelineInternalContext) {
     delegatesTo(closureDelegate())
 
@@ -254,7 +254,7 @@ contributor(pipelineInternalContext) {
 }
 
 // --- Inside 'agent {}' block ---
-def agentBlockContext = context(scope: closureScope(), enclosingCallName: 'agent')
+def agentBlockContext = context(scope: scriptScope())
 contributor(agentBlockContext) {
     method(name: 'label', type: 'void', params: [expression: 'String'], doc: 'Specifies the label for the agent node. e.g., label "linux&&64bit"')
     method(name: 'customWorkspace', type: 'void', params: [path: 'String'], doc: 'Specifies a custom workspace path on the agent.')
@@ -277,14 +277,14 @@ contributor(agentBlockContext) {
 }
 
 // --- Inside 'agent { node { ... } }' block ---
-def agentNodeBlockContext = context(scope: closureScope(), enclosingCallName: 'node', enclosingCallContainerName: 'agent')
+def agentNodeBlockContext = context(scope: scriptScope())
 contributor(agentNodeBlockContext) {
     method(name: 'label', type: 'void', params: [expression: 'String'], doc: 'Specifies the label for the agent node.')
     method(name: 'customWorkspace', type: 'void', params: [path: 'String'], doc: 'Specifies a custom workspace path.')
 }
 
 // --- Inside 'agent { kubernetes { ... } }' block ---
-def k8sAgentBlockContext = context(scope: closureScope(), enclosingCallName: 'kubernetes', enclosingCallContainerName: 'agent')
+def k8sAgentBlockContext = context(scope: scriptScope())
 contributor(k8sAgentBlockContext) {
     method(name: 'label', type: 'void', params: [podLabel: 'String'], doc: 'Label for the pod template.')
     method(name: 'yaml', type: 'void', params: [podSpecYaml: 'String'], doc: 'Inline YAML for the pod spec.')
@@ -293,12 +293,8 @@ contributor(k8sAgentBlockContext) {
 }
 
 // --- Inside 'post {}' block ---
-def postBlockContext = context(scope: closureScope(), enclosingCallName: 'post')
+def postBlockContext = context(scope: scriptScope())
 contributor(postBlockContext) {
-    postCondition(String conditionName, String description) { // Helper to define post conditions
-        method(name: conditionName, type: 'void', params: [body: Closure],
-                doc: "${description}\nAllowed inside '${conditionName} {}':\n- steps { ... }")
-    }
     postCondition('always', 'Run regardless of the Pipeline or stage status.')
     postCondition('changed', 'Run only if the current Pipeline or stage status is different from its previous run.')
     postCondition('fixed', 'Run only if the current Pipeline or stage status is "SUCCESS" and the previous run failed or was unstable.')
@@ -312,7 +308,7 @@ contributor(postBlockContext) {
 }
 
 // --- Inside post condition blocks (e.g. 'always {}', 'success {}') ---
-def postConditionInternalContext = context(scope: closureScope(), enclosingCallNames: ['always', 'changed', 'fixed', 'regression', 'aborted', 'failure', 'success', 'unstable', 'unsuccessful', 'cleanup'])
+def postConditionInternalContext = context(scope: scriptScope())
 contributor(postConditionInternalContext) {
     method(name: 'steps', type: 'void', params: [body: Closure],
             doc: '''
@@ -322,7 +318,7 @@ contributor(postConditionInternalContext) {
 }
 
 // --- Inside 'stages {}' block (contains 'stage' directives) ---
-def stagesBlockContext = context(scope: closureScope(), enclosingCallName: 'stages')
+def stagesBlockContext = context(scope: scriptScope())
 contributor(stagesBlockContext) {
     method(name: 'stage', type: 'void', params: [name: 'String', body: Closure],
             doc: '''
@@ -337,7 +333,7 @@ contributor(stagesBlockContext) {
 }
 
 // --- Inside 'stage("...") {}' block (a declarative stage) ---
-def stageInternalContext = context(scope: closureScope(), enclosingCallName: 'stage')
+def stageInternalContext = context(scope: scriptScope())
 contributor(stageInternalContext) {
     method(name: 'agent', type: 'void', params: [agentTypeOrBody: 'Object'], doc: 'Stage-specific agent. e.g., agent any, agent { label "my-label" }')
     method(name: 'environment', type: 'void', params: [body: Closure], doc: 'Stage-specific environment variables.')
@@ -356,7 +352,7 @@ contributor(stageInternalContext) {
 }
 
 // --- Inside 'when {}' block ---
-def whenBlockContext = context(scope: closureScope(), enclosingCallName: 'when')
+def whenBlockContext = context(scope: scriptScope())
 contributor(whenBlockContext) {
     method(name: 'branch', type: 'void', params: [patternOrMap: 'Object'], doc: "branch 'pattern' or branch name: '...', pattern: '...', comparator: '...'")
     method(name: 'buildingTag', type: 'void', params: [:], doc: "True if build is for a tag.")
@@ -373,13 +369,13 @@ contributor(whenBlockContext) {
 }
 
 // --- Inside 'environment {}' block ---
-def environmentBlockContext = context(scope: closureScope(), enclosingCallName: 'environment')
+def environmentBlockContext = context(scope: scriptScope())
 contributor(environmentBlockContext) {
     method(name: 'credentials', type: 'String', params: [credentialId: 'String'], doc: 'Resolves a Jenkins credential by ID. Usage: MY_SECRET = credentials("my-secret-id")')
 }
 
 // --- Inside 'parameters {}' block ---
-def parametersBlockContext = context(scope: closureScope(), enclosingCallName: 'parameters')
+def parametersBlockContext = context(scope: scriptScope())
 contributor(parametersBlockContext) {
     method(name: 'string', type: 'void', namedParams: [parameter(name:'name', type:'String'), parameter(name:'defaultValue', type:'String', optional: true), parameter(name:'description', type:'String', optional: true), parameter(name:'trim', type:'boolean', optional:true)], doc: 'Defines a string parameter.')
     method(name: 'booleanParam', type: 'void', namedParams: [parameter(name:'name', type:'String'), parameter(name:'defaultValue', type:'boolean', optional: true), parameter(name:'description', type:'String', optional: true)], doc: 'Defines a boolean parameter.')
@@ -390,7 +386,7 @@ contributor(parametersBlockContext) {
 }
 
 // --- Inside 'options {}' block ---
-def optionsBlockContext = context(scope: closureScope(), enclosingCallName: 'options')
+def optionsBlockContext = context(scope: scriptScope())
 contributor(optionsBlockContext) {
     method(name: 'buildDiscarder', type: 'void', params: [logRotatorConfig: 'Object'], doc: 'Discards old builds. e.g., buildDiscarder(logRotator(numToKeepStr: "10"))')
     method(name: 'disableConcurrentBuilds', type: 'void', namedParams: [parameter(name:'abortPrevious', type:'boolean', optional:true)], doc: 'Prevents concurrent executions. Optionally abort previous.')
@@ -412,7 +408,7 @@ contributor(optionsBlockContext) {
 }
 
 // --- Inside 'triggers {}' block ---
-def triggersBlockContext = context(scope: closureScope(), enclosingCallName: 'triggers')
+def triggersBlockContext = context(scope: scriptScope())
 contributor(triggersBlockContext) {
     method(name: 'cron', type: 'void', params: [spec: 'String'], doc: 'Triggers by cron schedule.')
     method(name: 'pollSCM', type: 'void', params: [spec: 'String'], doc: 'Polls SCM by cron schedule.')
@@ -421,7 +417,7 @@ contributor(triggersBlockContext) {
 }
 
 // --- Inside 'tools {}' block ---
-def toolsBlockContext = context(scope: closureScope(), enclosingCallName: 'tools')
+def toolsBlockContext = context(scope: scriptScope())
 contributor(toolsBlockContext) {
     methodMissing { String toolTypeName, Object args ->
         if (args.size() == 1 && args[0] instanceof String) {
@@ -434,7 +430,7 @@ contributor(toolsBlockContext) {
 }
 
 // --- Inside 'matrix {}' block ---
-def matrixBlockContext = context(scope: closureScope(), enclosingCallName: 'matrix')
+def matrixBlockContext = context(scope: scriptScope())
 contributor(matrixBlockContext) {
     method(name: 'axes', type: 'void', params: [body: Closure], doc: 'Defines matrix axes. Contains "axis" directives.')
     method(name: 'axis', type: 'void', namedParams: [parameter(name:'name', type:'String'), parameter(name:'values', type:'java.util.List'), parameter(name:'exclusions', type:'java.util.List', optional:true)], doc: 'Defines a single matrix axis (used directly in matrix for simple cases or within axes block).')
@@ -456,13 +452,13 @@ contributor(matrixBlockContext) {
 }
 
 // --- Inside 'matrix { axes { ... } }' ---
-def matrixAxesContext = context(scope: closureScope(), enclosingCallName: 'axes', enclosingCallContainerName: 'matrix')
+def matrixAxesContext = context(scope: scriptScope())
 contributor(matrixAxesContext) {
     method(name: 'axis', type: 'void', namedParams: [parameter(name:'name', type:'String'), parameter(name:'values', type:'java.util.List'), parameter(name:'exclusions', type:'java.util.List', optional:true)], doc: 'Defines a matrix axis. e.g., axis name: "PLATFORM", values: ["linux", "windows"]')
 }
 
 // --- Inside 'matrix { excludes { exclude { ... } } }' ---
-def matrixExcludesInternalContext = context(scope: closureScope(), enclosingCallName: 'exclude', enclosingCallContainerName: 'matrix')
+def matrixExcludesInternalContext = context(scope: scriptScope())
 contributor(matrixExcludesInternalContext) {
     method(name: 'axis', type: 'void', namedParams: [parameter(name:'name', type:'String'), parameter(name:'values', type:'java.util.List')], doc: 'Specifies axis values to exclude for a particular axis name in this exclusion.')
 }
