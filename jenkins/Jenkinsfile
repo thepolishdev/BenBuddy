@@ -1,1 +1,9 @@
-pipeline
+pipeline {
+    agent any
+    params {
+        string(name: 'NAME', defaultValue: 'World', description: 'Name to greet')
+    }
+    stage('Test') {
+        sleep(5)
+    }
+}
