@@ -1,9 +1,12 @@
 pipeline {
-    agent any
-    params {
-        string(name: 'NAME', defaultValue: 'World', description: 'Name to greet')
-    }
-    stage('Test') {
-        sleep(5)
+    stages {
+        parallel {
+            stage('Build') {
+                echo 'Building the project...'
+            }
+            stage('Test') {
+                echo 'Running tests...'
+            }
+        }
     }
 }
