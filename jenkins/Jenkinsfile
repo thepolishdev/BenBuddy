@@ -1,12 +1,8 @@
-pipeline {
-    stages {
-        parallel {
-            stage('Build') {
-                echo 'Building the project...'
-            }
-            stage('Test') {
-                echo 'Running tests...'
-            }
-        }
-    }
-}
+pipeline(stages {
+  stage('Test') {
+      steps {
+            echo 'Running tests...'
+            // Add your test commands here
+      }
+  }
+})
